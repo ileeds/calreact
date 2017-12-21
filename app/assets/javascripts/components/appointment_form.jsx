@@ -1,39 +1,39 @@
-window.AppointmentForm = createReactClass({
-  handleChange: function(e) {
-    var name = e.target.name;
+class AppointmentForm extends React.Component {
+  handleChange(e) {
+    const name = e.target.name;
     obj = {}
     obj[name] = e.target.value;
     this.props.onUserInput(obj);
-  },
+  }
 
-  handleSubmit: function(e) {
+  handleSubmit(e) {
     e.preventDefault();
     this.props.onFormSubmit();
-  },
+  }
 
-  setApptTime: function(e) {
-    var name = 'appt_time';
-    var obj = {};
+  setApptTime(e) {
+    const name = 'appt_time';
+    const obj = {};
     if (obj[name] = e.toDate()) {
       this.props.onUserInput(obj);
     }
-  },
+  }
 
-  render: function() {
-    var inputProps = {
+  render () {
+    const inputProps = {
       name: 'appt_time'
     };
     return (
       <div>
         <h2>Make a new appointment</h2>
-        <form onSubmit={this.handleSubmit}>
+        <form onSubmit={(e) => this.handleSubmit(e)}>
           <input name='title' placeholder='Appointment title'
-            value={this.props.title} onChange={this.handleChange} />
+            value={this.props.title} onChange={(e) => this.handleChange(e)} />
           <Datetime input={false} open={true} inputProps={inputProps}
-            value={this.props.appt_time} onChange={this.setApptTime}/>
+            value={this.props.appt_time} onChange={(e) => this.setApptTime(e)}/>
           <input type='submit' value='Make appointment' className='submit-button' />
         </form>
       </div>
     )
   }
-});
+}
