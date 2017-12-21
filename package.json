@@ -1,0 +1,8 @@
+{
+  "name": "calreact",
+  "private": true,
+  "dependencies": {
+    "immutability-helper": "^2.6.2",
+    "react-datetime": "^2.11.1"
+  }
+}
