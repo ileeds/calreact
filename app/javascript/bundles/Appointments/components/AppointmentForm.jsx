@@ -1,9 +1,24 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Datetime from 'react-datetime';
 import moment from 'moment';
 import { validations } from '../utils/validations'
 
 export default class AppointmentForm extends React.Component {
+  static propTypes = {
+    title: PropTypes.shape({
+      value: PropTypes.string.isRequired,
+      valid: PropTypes.bool.isRequired
+    }).isRequired,
+    appt_time: PropTypes.shape({
+      value: PropTypes.instanceOf(Date).isRequired,
+      valid: PropTypes.bool.isRequired
+    }).isRequired,
+    formValid: PropTypes.bool.isRequired,
+    onUserInput: PropTypes.func.isRequired,
+    onFormSubmit: PropTypes.func.isRequired
+  }
+
   static formValidations = {
     title: [
       (s) => { return(validations.checkMinLength(s, 3)) }
