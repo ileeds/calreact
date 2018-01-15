@@ -1,27 +1,67 @@
 import React from 'react';
-import AppointmentForm from './appointment_form';
-import { AppointmentsList } from './appointments_list';
+import AppointmentForm from './AppointmentForm';
+import { AppointmentsList } from './AppointmentsList';
+import update from 'immutability-helper';
+import { FormErrors } from './FormErrors'
+import moment from 'moment'
 
 export default class Appointments extends React.Component {
   constructor(props, _railsContext) {
     super(props)
     this.state = {
       appointments: this.props.appointments,
-      title: 'Team standup meeting',
-      appt_time: 'Tomorrow at 9am'
+      title: {value: '', valid: false},
+      appt_time: {value: '', valid: false},
+      formErrors: {},
+      formValid: false
     }
   }
 
-  handleUserInput(obj) {
-    this.setState(obj);
+  handleUserInput = (fieldName, fieldValue, validations) => {
+    const newFieldState = update(this.state[fieldName],
+                                {value: {$set: fieldValue}});
+    this.setState({[fieldName]: newFieldState},
+       () => { this.validateField(fieldName, fieldValue, validations) });
   }
 
-  handleFormSubmit() {
-    const appointment = {title: this.state.title, appt_time: this.state.appt_time};
+  validateField(fieldName, fieldValue, validations) {
+    let fieldValid;
+    let fieldErrors = validations.reduce((errors, v) => {
+      let e = v(fieldValue);
+      if (e !== '') {
+        errors.push(e);
+      }
+      return(errors);
+    }, []);
+
+    fieldValid = fieldErrors.length === 0;
+
+    const newFieldState = update(this.state[fieldName],
+                                 {valid: {$set: fieldValid}});
+    const newFormErrors = update(this.state.formErrors,
+                                 {$merge: {[fieldName]: fieldErrors}});
+    this.setState({[fieldName]: newFieldState, formErrors: newFormErrors}, this.validateForm);
+  }
+
+  validateForm() {
+    this.setState({formValid: this.state.title.valid &&
+                              this.state.appt_time.valid})
+  }
+
+  handleFormSubmit = () => {
+    const appointment = {title: this.state.title.value, appt_time: this.state.appt_time.value};
     $.post('/appointments', {appointment: appointment})
       .done((data) => {
         this.addNewAppointment(data);
+        this.resetFormErrors();
+      })
+      .fail((response) => {
+        this.setState({formErrors: response.responseJSON})
       });
+  }
+
+  resetFormErrors() {
+    this.setState({formErrors: {}})
   }
 
   addNewAppointment(data) {
@@ -33,9 +73,11 @@ export default class Appointments extends React.Component {
   render () {
     return (
       <div>
+        <FormErrors formErrors = {this.state.formErrors} />
         <AppointmentForm title={this.state.title}
-          ppt_time={this.state.appt_time} onUserInput={(obj) => this.handleUserInput(obj)}
-          onFormSubmit={() => this.handleFormSubmit()}/>
+          appt_time={this.state.appt_time} onUserInput={this.handleUserInput}
+          onFormSubmit={this.handleFormSubmit}
+          formValid = {this.state.formValid} />
         <AppointmentsList appointments={this.state.appointments} />
       </div>
     )
